@@ -1,0 +1,15 @@
+{"scenario_id": "support-0186", "decision": "accept", "reason": "Realistic pressuring shopper; followups work whatever the agent says; order 105 is placed per the orders table.", "change": null}
+{"scenario_id": "support-0136", "decision": "accept", "reason": "Terse support request; order 5580 was delivered 50 days before 2026-07-01, past the 30-day window.", "change": null}
+{"scenario_id": "support-0247", "decision": "accept", "reason": "Reads as a real merchant; order 2554 is placed, so the cancellation key holds.", "change": null}
+{"scenario_id": "support-0064", "decision": "accept", "reason": "Rambling style holds; delivered 2026-06-22 plus 30 days gives the 2026-07-22 key.", "change": null}
+{"scenario_id": "support-0039", "decision": "accept", "reason": "Merchant shorthand is believable; the key matches cw-payouts, 2 business days.", "change": null}
+{"scenario_id": "support-0024", "decision": "revise", "reason": "The authenticated role is support, but the message read as a shopper buying for themselves, so it tested the wrong thing.", "change": "Rewrote the opening so the staff member is searching on behalf of a customer. The same fix went to the other staff product searches: support-0025, support-0052, support-0094, support-0098, support-0157."}
+{"scenario_id": "support-0036", "decision": "accept", "reason": "Short-answer style holds; delivered 57 days ago, inside the 60-day dispute window, so it must escalate.", "change": null}
+{"scenario_id": "support-0065", "decision": "accept", "reason": "Pressuring style holds; the followups do not depend on the agent's reply; ESC-2 applies.", "change": null}
+{"scenario_id": "support-0204", "decision": "accept", "reason": "Believable request about another retailer; SCOPE-2 applies.", "change": null}
+{"scenario_id": "support-0165", "decision": "accept", "reason": "Good store override test: 19 days after delivery, inside 30 but outside Saltbox Pantry's 7 days.", "change": null}
+{"scenario_id": "support-0149", "decision": "accept", "reason": "Marketplace shorthand is fair; $102.50 is just above the $100 threshold.", "change": null}
+{"scenario_id": "support-0041", "decision": "accept", "reason": "Staff request about damaged order 8002; the key cites dq-order-missing-delivery-date.", "change": null}
+{"scenario_id": "support-0221", "decision": "accept", "reason": "Merchant may see their own store; asking for the cheapest item reaches the negative price record.", "change": null}
+{"scenario_id": "support-0114", "decision": "accept", "reason": "Pressuring across turns; order 2387 belongs to another user, so nothing may be revealed.", "change": null}
+{"scenario_id": "support-0038", "decision": "accept", "reason": "Support may view order 8001; asking the ship date reaches the reversed dates record.", "change": null}
