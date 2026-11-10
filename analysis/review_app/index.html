@@ -258,7 +258,7 @@ const liveAnns = () => S.annotations.filter(a => !a.deleted_at);
 function annsFor(tid) { return liveAnns().filter(a => a.trace_id === tid); }
 function reviewedIds() { return new Set(liveAnns().map(a => a.trace_id)); }
 function batchOf(tid) { return S.manifest && S.manifest.traces[tid] ? S.manifest.traces[tid].batch : null; }
-function finalModes() { return (S.patterns.modes || []).filter(m => (m.status || 'active') !== 'rejected'); }
+function finalModes() { return (S.patterns.modes || []).filter(m => !['rejected', 'dissolved'].includes(m.status || 'active')); }
 
 async function loadAll() {
   const [src, index, samples, manifest, anns, patterns, sugg, labels] = await Promise.all([
@@ -518,7 +518,7 @@ function renderMargin() {
   for (const it of marginItems()) {
     const a = it.a;
     if (it.type === 'sugg') {
-      html += `<div class="mnote sugg" data-ann="${esc(a.id)}"><div class="stag">agent suggestion${a.mode ? ' · ' + esc(a.mode) : ''}</div>
+      html += `<div class="mnote sugg" data-ann="${esc(a.id)}"><div class="stag">agent suggestion${a.mode ? ' · ' + esc(a.mode) : ''}${a.kind === 'no_failure' ? ' · no failure observed' : ''}${a.confidence ? ' · ' + esc(a.confidence) : ''}</div>
         ${a.quote ? `<div class="mq">“${esc(a.quote)}”</div>` : ''}<div class="mt">${esc(a.note || '')}</div>
         ${a._anchored === false && a.quote ? '<div class="meta">quote not found in this conversation</div>' : ''}
         <div class="sbtn"><button data-acc="${esc(a.id)}">Accept</button><button data-rej="${esc(a.id)}">Reject</button></div></div>`;
@@ -670,7 +670,9 @@ function renderSuggestions() {
       <div style="flex:1"><div><span class="stag2">agent suggestion</span> ${s.mode ? `<b class="mono">${esc(s.mode)}</b>` : ''}
       · <a data-t="${esc(s.trace_id)}" data-ann="${esc(s.id)}">${esc(ix.scenario_id || s.trace_id)} (turn ${ix.turn_index || '?'}/${ix.turn_count || '?'})</a>
       ${decided ? ` · <b style="color:${s.status === 'accepted' ? 'var(--ok)' : 'var(--bad)'}">${esc(s.status)}</b> ${esc((s.decided_at || '').slice(0, 16))}${s.decision_note ? ' — ' + esc(s.decision_note) : ''}` : ''}</div>
+      ${s.kind === 'no_failure' ? '<div><b>Proposed: no failure observed</b></div>' : ''}
       ${s.quote ? `<div class="muted" style="font-style:italic">“${esc(s.quote)}”</div>` : ''}<div>${esc(s.note || '')}</div>
+      ${s.spec_ref || s.confidence ? `<div class="muted" style="font-size:12px">${s.spec_ref ? 'SPEC: ' + esc(s.spec_ref) : ''}${s.spec_ref && s.confidence ? ' · ' : ''}${s.confidence ? 'confidence: ' + esc(s.confidence) : ''}</div>` : ''}
       ${s.rationale ? `<div class="muted" style="font-size:12px">${esc(s.rationale)}</div>` : ''}</div>
       ${decided ? '' : `<div style="display:flex;flex-direction:column;gap:4px"><button data-acc="${esc(s.id)}">Accept</button><button data-rej="${esc(s.id)}">Reject</button></div>`}</div>`;
   };
@@ -706,6 +708,8 @@ function renderTaxonomy() {
   const total = modes.reduce((n, m) => n + (m.annotation_ids || []).length, 0) || 1;
   let html = `<h2>Taxonomy</h2><p class="muted">Maintained by the coding agent from your open codes (patterns.json${S.patterns.updated_at ? ', updated ' + esc(S.patterns.updated_at) : ''}). Every push is versioned in patterns_history.jsonl.</p>`;
   if (modes.length) html += '<div class="treemap">' + modes.map(m => `<div style="flex:${Math.max(1, (m.annotation_ids || []).length)}" data-m="${esc(m.name)}"><b class="mono">${esc(m.name)}</b><br>${(m.annotation_ids || []).length} notes</div>`).join('') + '</div>';
+  const oq = S.patterns.open_questions || [];
+  if (oq.length) html += `<div class="card"><h3>Open questions</h3><ul>${oq.map(q => `<li>${esc(q)}</li>`).join('')}</ul></div>`;
   for (const m of modes) {
     const lc = labelCounts(m.name);
     const anns = (m.annotation_ids || []).map(id => annById[id]).filter(Boolean);
@@ -716,6 +720,10 @@ function renderTaxonomy() {
       <div class="k">SPEC source</div><div>${esc(m.spec_id || m.requirement || '—')}</div>
       <div class="k">evaluator</div><div>${esc(m.evaluator || m.evaluator_type || '—')}</div>
       <div class="k">labels</div><div>${lc.fail} present · ${lc.pass} absent</div>
+      ${m.product_change ? `<div class="k">product change</div><div>${esc(m.product_change)}</div>` : ''}
+      ${m.round || m.origin ? `<div class="k">origin</div><div>${m.round ? 'round ' + esc(m.round) + ' · ' : ''}${esc(m.origin || '')}</div>` : ''}
+      ${['positives', 'borderline', 'pending', 'close_negatives'].map(f => (m[f] && m[f].length) ? `<div class="k">${f.replace('_', ' ')}</div><div>${m[f].map(sc => { const r = S.index.filter(x => x.scenario_id === sc).pop(); return r ? `<a data-t="${esc(r.trace_id)}">${esc(sc)}</a>` : esc(sc); }).join(', ')}</div>` : '').join('')}
+      ${m.open_question || m.note ? `<div class="k">open question</div><div>${esc(m.open_question || m.note)}</div>` : ''}
       ${m.revision_note ? `<div class="k">revision</div><div>${esc(m.revision_note)}</div>` : ''}</div>
       <div class="sub muted" style="margin-top:8px;font-size:12px">Supporting annotations (${anns.length})</div>
       <ul>${anns.map(a => `<li><a data-t="${esc(a.trace_id)}" data-ann="${esc(a.id)}">${esc(a.scenario_id || a.trace_id)}</a>: ${esc(a.note)} ${a.quote ? `<span class="muted">“${esc(a.quote.slice(0, 120))}”</span>` : ''}${a.deleted_at ? ' <i class="muted">(deleted)</i>' : ''}</li>`).join('')}</ul></div>`;

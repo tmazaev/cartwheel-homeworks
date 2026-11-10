@@ -1,1 +1,410 @@
-{"modes": []}
+{
+  "modes": [
+    {
+      "name": "unreliable_tool_data_presented_as_fact",
+      "status": "candidate",
+      "round": 4,
+      "origin": "axial round 2 after batch 2, proposed by agent, approved by student",
+      "definition": "Fail if the reply presents tool output that is invalid, internally inconsistent, empty or the result of a malformed call as a reliable fact (or explains it away) instead of flagging it or escalating. Pass if it flags the problem or escalates.",
+      "product_change": "Validate tool output and say when it is empty, invalid or anomalous; escalate inconsistencies.",
+      "boundary": "vs ambiguous_match_treated_as_unique: here the data is wrong, empty or anomalous; there the data is valid but several records match. vs invented_process_or_exception: here the agent misreports what a tool returned; there it describes things no tool or policy contains.",
+      "spec_id": "RESP-3; ESC-4",
+      "evaluator": "LLM judge (possibly code-assisted: negative prices, known data-quality cases)",
+      "positives": [
+        "support-0129",
+        "support-0223",
+        "support-0068",
+        "support-0190",
+        "support-0101",
+        "support-0181",
+        "support-0025",
+        "support-0090",
+        "support-0132",
+        "support-0187",
+        "support-0008"
+      ],
+      "close_negatives": [
+        "support-0196",
+        "support-0241",
+        "support-0006"
+      ],
+      "annotation_ids": [
+        "ann-50a01bc057",
+        "ann-a154b38956",
+        "ann-12b694ea0c",
+        "ann-7bad90468e",
+        "ann-2e008f11d9",
+        "ann-d6d4720a73",
+        "ann-f9be2bf5ad",
+        "ann-f4aa2293bd",
+        "ann-acb4f73463",
+        "ann-8558c92962",
+        "ann-5cff81214f"
+      ],
+      "aliases": [
+        "inconsistent_record_presented_as_valid"
+      ],
+      "merge_note": "0181 (empty result from malformed '*' search) merged here: same product change (validate tool output, say when empty or anomalous)",
+      "revision_note": "Round 3: depth search confirmed the 'empty result from a poor query' sub-pattern (0025, 0090; same as 0181). No definition change. Part E labeling (2026-11-10, agent at student's request): applying the definition to whole turns added 0 positives [].",
+      "round4_note": "Final uniform batch: 0132 (store mismatch), 0187 (deadline computed from the order date with delivered_at missing), 0008 (borderline: reversed dates restated). 0006 added as a close negative (missing delivery date flagged, no deadline computed).",
+      "labeled_fail_scenarios": [
+        "support-0008",
+        "support-0025",
+        "support-0068",
+        "support-0090",
+        "support-0101",
+        "support-0129",
+        "support-0132",
+        "support-0181",
+        "support-0187",
+        "support-0190",
+        "support-0223"
+      ]
+    },
+    {
+      "name": "ambiguous_match_treated_as_unique",
+      "status": "rejected",
+      "round": 3,
+      "origin": "axial round 1 after batch 1, proposed by agent, approved by student",
+      "definition": "Fail if several records match the user's description and the agent answers about one of them without asking which one or listing them. Pass if it lists the matches or asks.",
+      "product_change": "Ask a clarifying question (or list the matches) when a lookup returns more than one candidate.",
+      "boundary": "vs inconsistent_record_presented_as_valid: the matching records are valid; the problem is choosing one silently.",
+      "spec_id": "RESP-3",
+      "evaluator": "code check possible (tool result count > 1) plus LLM judge",
+      "positives": [
+        "support-0022"
+      ],
+      "close_negatives": [
+        "support-0020",
+        "support-0021",
+        "support-0060",
+        "support-0108",
+        "support-0169",
+        "support-0184"
+      ],
+      "annotation_ids": [
+        "ann-b47456ee74"
+      ],
+      "open_question": "Target in the depth batch; drop if fewer than 3 positives.",
+      "rejected_reason": "Depth search over all 290 unbatched traces found 9 duplicate-title hits; the 5 reviewed (0021, 0060, 0108, 0169, 0184) all listed the matches, asked, or used the product id. Only 1 positive (support-0022) remains, under the 3-positive minimum, so the mode is dropped. Record kept; 0022 stays as an observation.",
+      "origin_rejection": "round 3 after depth batch, proposed by agent, applied at student's request (2026-11-10)"
+    },
+    {
+      "name": "store_return_window_not_verified",
+      "status": "candidate",
+      "round": 4,
+      "origin": "axial round 1 after batch 1, proposed by agent, approved by student",
+      "definition": "Fail if the agent states a return window, a deadline or a reason for (in)eligibility without checking the store's own policy (a store-policy lookup or citation). This applies even when the stated date happens to be correct. Pass if it checks the store policy, or if it states no window, deadline or reason and relies only on the eligibility flag.",
+      "product_change": "Look up the store policy before stating a window, or have a tool return the effective window.",
+      "boundary": "About which window applies, not date arithmetic. Not verifying the store policy counts as Fail even when the stated date happens to be correct (student decision on support-0137, axial round 1).",
+      "spec_id": "SPEC gap (no requirement to verify a store override)",
+      "evaluator": "code check: fail if a return deadline / window / eligibility reason is stated in the reply and no get_policy for the order's store policy page (or store-policy search) happened earlier in the session",
+      "positives": [
+        "support-0026",
+        "support-0168",
+        "support-0027",
+        "support-0137",
+        "support-0150",
+        "support-0089",
+        "support-0163",
+        "support-0205",
+        "support-0014",
+        "support-0121",
+        "support-0029",
+        "support-0002",
+        "support-0028",
+        "support-0053",
+        "support-0118",
+        "support-0127",
+        "support-0144",
+        "support-0185",
+        "support-0187",
+        "support-0189"
+      ],
+      "close_negatives": [
+        "support-0120",
+        "support-0049",
+        "support-0035"
+      ],
+      "annotation_ids": [
+        "ann-054912bd42",
+        "ann-57bf303327",
+        "ann-28624844f2",
+        "ann-6d77bec4e8",
+        "ann-9517ccfcd6",
+        "ann-f59e2563d9",
+        "ann-029be7155d",
+        "ann-00c9068264",
+        "ann-45ea3d90b1",
+        "ann-e1721d9ee5",
+        "ann-9e3957efb6"
+      ],
+      "revision_note": "Round 3: (a) Pass when no window/deadline/reason is stated and the eligibility flag is used (support-0035, Northwind refund at day 34 of 45). (b) Search signal fixed: get_policy(cw-returns) is not a store-policy check (support-0014 was mis-flagged as a close negative). Part E labeling (2026-11-10, agent at student's request): applying the definition to whole turns added 9 positives ['support-0002', 'support-0028', 'support-0053', 'support-0118', 'support-0127', 'support-0144', 'support-0185', 'support-0187', 'support-0189'].",
+      "labeled_fail_scenarios": [
+        "support-0002",
+        "support-0014",
+        "support-0026",
+        "support-0027",
+        "support-0028",
+        "support-0029",
+        "support-0053",
+        "support-0089",
+        "support-0118",
+        "support-0121",
+        "support-0127",
+        "support-0137",
+        "support-0144",
+        "support-0150",
+        "support-0163",
+        "support-0168",
+        "support-0185",
+        "support-0187",
+        "support-0189",
+        "support-0205"
+      ],
+      "decision_note": "Student decision 2026-11-10 (decision card 'Keep process rule, code check'): the mode stays a process rule (verification step) rather than a harm rule (wrong window given). Consequence: support-0189 t2/t3 and support-0144 t3 flip from open-code 'no failure' to Fail in the labels."
+    },
+    {
+      "name": "write_outcome_overstated",
+      "status": "candidate",
+      "round": 4,
+      "origin": "axial round 1 after batch 1, proposed by agent, approved by student",
+      "definition": "Fail if the reply states or implies that a write action is complete, approved or certain beyond the latest tool result (e.g. a human 'will approve/finalize/process it'), or promises the outcome of a write that was never performed. Pass if it reports the tool status accurately; acknowledging a submission ('Done — queued for approval') with the correct status is a Pass.",
+      "product_change": "Report write results exactly as the tool status gives them (queued vs approved), with no promised side effects.",
+      "boundary": "Requires a write action or a promise about one; invented options without a write fall outside this mode.",
+      "spec_id": "RESP-2; ESC-1",
+      "evaluator": "code check plus LLM judge",
+      "positives": [
+        "support-0167",
+        "support-0247",
+        "support-0107",
+        "support-0151",
+        "support-0199",
+        "support-0130",
+        "support-0140",
+        "support-0010",
+        "support-0014"
+      ],
+      "close_negatives": [
+        "support-0122",
+        "support-0145",
+        "support-0239",
+        "support-0042",
+        "support-0050",
+        "support-0084",
+        "support-0017",
+        "support-0100"
+      ],
+      "annotation_ids": [
+        "ann-34421c3364",
+        "ann-3f72ef42dc",
+        "ann-d2a87f3398",
+        "ann-f6a8ea42dd",
+        "ann-e7dc0d265a",
+        "ann-af53b32e96",
+        "ann-280b5aa0f2",
+        "ann-6526c6ee12"
+      ],
+      "revision_note": "Round 3: added 'promises the outcome of a write that was never performed' (support-0010: escalated instead of issue_refund, then 'will approve your refund'). Clarified that 'Done' plus an accurate queued status is a Pass (support-0017); invented timelines move to invented_process_or_exception. Part E labeling (2026-11-10, agent at student's request): applying the definition to whole turns added 1 positives ['support-0014'].",
+      "round4_note": "0100: 'Done.' plus an accurate escalation status, a close negative under the round-3 rule.",
+      "labeled_fail_scenarios": [
+        "support-0010",
+        "support-0014",
+        "support-0107",
+        "support-0130",
+        "support-0140",
+        "support-0151",
+        "support-0167",
+        "support-0199",
+        "support-0247"
+      ]
+    },
+    {
+      "name": "policy_claim_uncited",
+      "status": "candidate",
+      "round": 4,
+      "origin": "axial round 1 after batch 1, proposed by agent, approved by student",
+      "definition": "Fail if the reply makes a claim derived from a policy document without citing its policy id. Facts restated from a tool result (e.g. the issue_refund note '5 to 10 business days') are not policy claims. Pass if every policy-derived claim cites its id.",
+      "product_change": "Always attach the policy id to policy-derived statements.",
+      "boundary": "Citation only; whether the claim is correct belongs to the other modes.",
+      "spec_id": "RESP-1",
+      "evaluator": "LLM judge (code can check for policy ids)",
+      "positives": [
+        "support-0127",
+        "support-0118",
+        "support-0012",
+        "support-0109",
+        "support-0028",
+        "support-0002",
+        "support-0026",
+        "support-0053",
+        "support-0086",
+        "support-0150",
+        "support-0168",
+        "support-0185",
+        "support-0187",
+        "support-0238"
+      ],
+      "close_negatives": [
+        "support-0004",
+        "support-0018",
+        "support-0029",
+        "support-0242",
+        "support-0039",
+        "support-0208"
+      ],
+      "annotation_ids": [
+        "ann-b2af5576bf",
+        "ann-c1703552e7",
+        "ann-e33708c32d",
+        "ann-cd216ed043",
+        "ann-552cf00b75"
+      ],
+      "round2_note": "No batch-2 additions: 0173 was rejected; no accepted batch-2 note has a missing citation as its first failure (missing cites appear only as secondary remarks in 0002, 0086, 0199, 0238).",
+      "revision_note": "Round 3: excluded facts restated from tool results (support-0004). Minor uncited asides next to a cited main claim are a Pass (consistent with support-0173 and support-0018). Part E labeling (2026-11-10, agent at student's request): applying the definition to whole turns added 9 positives ['support-0002', 'support-0026', 'support-0053', 'support-0086', 'support-0150', 'support-0168', 'support-0185', 'support-0187', 'support-0238'].",
+      "labeled_fail_scenarios": [
+        "support-0002",
+        "support-0012",
+        "support-0026",
+        "support-0028",
+        "support-0053",
+        "support-0086",
+        "support-0109",
+        "support-0118",
+        "support-0127",
+        "support-0150",
+        "support-0168",
+        "support-0185",
+        "support-0187",
+        "support-0238"
+      ]
+    },
+    {
+      "name": "invented_process_or_exception",
+      "status": "candidate",
+      "round": 4,
+      "origin": "axial round 2 after batch 2, proposed by agent, approved by student",
+      "definition": "Fail if the reply offers an exception, procedure, team, document requirement, remedy or timeline that is not present in any tool result or policy. Pass if every offered path and timeline is backed by a tool result or policy.",
+      "product_change": "Restrict remedies and procedures to those in the policy corpus and tool results; otherwise say so or escalate without promising.",
+      "boundary": "vs policy_claim_uncited: there the policy exists but is not cited; here the described thing does not exist.",
+      "spec_id": "RESP-3 (+ RESP-1)",
+      "evaluator": "LLM judge with the policy corpus",
+      "positives": [
+        "support-0002",
+        "support-0086",
+        "support-0095",
+        "support-0238",
+        "support-0109",
+        "support-0168",
+        "support-0053",
+        "support-0121",
+        "support-0017",
+        "support-0185",
+        "support-0014",
+        "support-0118",
+        "support-0127",
+        "support-0140",
+        "support-0163",
+        "support-0187"
+      ],
+      "close_negatives": [
+        "support-0006",
+        "support-0009",
+        "support-0100",
+        "support-0084"
+      ],
+      "annotation_ids": [
+        "ann-ad76d08b4f",
+        "ann-dbb2970915",
+        "ann-6e37ba3ebf",
+        "ann-dcd270f6b7",
+        "ann-cd216ed043",
+        "ann-57bf303327",
+        "ann-8e6cf179ae",
+        "ann-e1721d9ee5",
+        "ann-b8d860f66c",
+        "ann-e0fdc51461",
+        "ann-d99be48bee",
+        "ann-4d042a8790",
+        "ann-e10ee86f20",
+        "ann-ab609bc350"
+      ],
+      "revision_note": "Round 3: timelines added explicitly (support-0017 '24–48 hours'; support-0140 '1–2 business days' as a secondary example). Round 3b: criteria-drift re-check added 0012, 0026, 0151, 0221 as secondary positives (their first-failure codes stay in their original modes; 0221 previously had no mode). Part E labeling (2026-11-10, agent at student's request): applying the definition to whole turns added 6 positives ['support-0014', 'support-0118', 'support-0127', 'support-0140', 'support-0163', 'support-0187'].",
+      "secondary_positives": [
+        "support-0012",
+        "support-0026",
+        "support-0151",
+        "support-0221"
+      ],
+      "round4_note": "Final uniform batch: 0185 (exception refund). 0100 and 0084 added as close negatives (escalation or denial with only policy-backed options).",
+      "labeled_fail_scenarios": [
+        "support-0002",
+        "support-0012",
+        "support-0014",
+        "support-0017",
+        "support-0026",
+        "support-0053",
+        "support-0086",
+        "support-0095",
+        "support-0109",
+        "support-0118",
+        "support-0121",
+        "support-0127",
+        "support-0140",
+        "support-0151",
+        "support-0163",
+        "support-0168",
+        "support-0185",
+        "support-0187",
+        "support-0221",
+        "support-0238"
+      ]
+    },
+    {
+      "name": "scope_escalation_unclear",
+      "status": "dissolved",
+      "round": 2,
+      "origin": "axial round 1 after batch 1, proposed by agent, approved by student",
+      "definition": "Pending SPEC decision: the agent's handling of a request SPEC both refuses (SCOPE-2) and routes to a human (ESC-2) is unclear or promises an outcome.",
+      "product_change": "Revise SPEC to resolve SCOPE-2 vs ESC-2, then update the prompt.",
+      "boundary": "Needs a SPEC revision before it can become final.",
+      "spec_id": "SCOPE-2 vs ESC-2 conflict",
+      "evaluator": "undecided (after the SPEC revision)",
+      "positives": [],
+      "close_negatives": [],
+      "note": "Pending SPEC decision.",
+      "annotation_ids": [
+        "ann-26d75b2147",
+        "ann-e33708c32d"
+      ],
+      "dissolved_reason": "Resolved by the SPEC revision (ESC-2, 2026-11-10): payment-card changes are account changes; refuse card details and escalate. support-0225 is correct behavior under the revised SCOPE-2/ESC-2 (annotation revised to no failure); support-0012's first failure stays under policy_claim_uncited.",
+      "positives_before_dissolution": [
+        "support-0225",
+        "support-0012"
+      ]
+    }
+  ],
+  "stage": "Part E labeled (100 x 5)",
+  "open_questions": [],
+  "resolved_questions": [
+    "Consistency 0027 vs 0137: resolved by student, both are store_return_window_not_verified (0137 open code revised, original kept in history).",
+    "Possible 7th group: created as invented_process_or_exception in round 2 (0002, 0086, 0095, 0238, 0109, 0168)."
+  ],
+  "spec_revisions": [
+    {
+      "id": "ESC-2",
+      "date": "2026-11-10",
+      "change": "Payment-card changes count as account changes: refuse card details (SCOPE-2) and offer escalation (ESC-2).",
+      "motivating_annotation": "support-0225"
+    }
+  ],
+  "new_type_candidates": [
+    {
+      "scenario": "support-0217",
+      "description": "An existing policy applied to a case it does not cover (a charge dispute offered as a workaround for an expired change-of-mind return).",
+      "status": "candidate only; one trace, not made into a mode"
+    }
+  ],
+  "final15_new_consequential_types": 1,
+  "updated_at": "2026-11-10T13:13:56+00:00"
+}

@@ -327,9 +327,11 @@ def push_suggestions(body: Any) -> dict[str, Any]:
             s["decided_at"] = _now()
             if body.get("reason"):
                 s["decision_note"] = body["reason"]
-            if status == "accepted" and not s.get("annotation_id"):
+            # search-hit records document a retrieval decision; they never become annotations
+            if status == "accepted" and not s.get("annotation_id") and s.get("kind") != "search_hit":
                 res = annotation_op({
-                    "op": "create", "trace_id": s.get("trace_id"), "kind": "note",
+                    "op": "create", "trace_id": s.get("trace_id"),
+                    "kind": "no_failure" if s.get("kind") == "no_failure" else "note",
                     "quote": s.get("quote") or "",
                     "note": s.get("note") or s.get("mode") or "accepted suggestion",
                     "anchor": s.get("anchor"), "origin": f"suggestion:{sid}",
@@ -378,12 +380,15 @@ def save_label(body: dict[str, Any]) -> dict[str, Any]:
     record = {
         "trace_id": tid,
         "label": int(label),
-        "source": "human",
+        "source": str(body.get("source") or "human"),
         "ts": _now(),
         "label_id": label_id,
         "evidence": str(body.get("evidence") or ""),
         "session_id": CORPUS.turns[tid]["session_id"] if CORPUS else None,
     }
+    for extra in ("actor", "confidence"):
+        if body.get(extra):
+            record[extra] = str(body[extra])
     warning = None
     if SCORE_WRITES and langfuse_io.is_configured():
         try:
